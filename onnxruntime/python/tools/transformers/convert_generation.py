@@ -61,7 +61,6 @@ from models.t5.convert_to_onnx import export_onnx_models as export_t5_onnx_model
 from models.t5.t5_helper import PRETRAINED_MT5_MODELS, PRETRAINED_T5_MODELS
 from onnx import GraphProto, ModelProto, TensorProto
 from onnx_model import OnnxModel
-from shape_infer_helper import SymbolicShapeInferenceHelper
 from transformers import (
     GPT2Config,
     GPT2LMHeadModel,

@@ -112,11 +112,6 @@ def chain_model(args):
     if args.no_speech_token_id >= 0:
         node.attribute.extend([helper.make_attribute("no_speech_token", args.no_speech_token_id)])
 
-    # beam graph inputs
-    float_data_type = TensorProto.FLOAT
-    if args.precision == Precision.FLOAT16:
-        float_data_type = TensorProto.FLOAT16
-
     input_features = helper.make_tensor_value_info(
         "input_features", TensorProto.FLOAT, ["batch_size", "feature_size", "sequence_length"]
     )
