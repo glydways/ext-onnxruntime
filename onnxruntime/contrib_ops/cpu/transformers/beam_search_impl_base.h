@@ -79,16 +79,6 @@ struct BeamSearchState : IBeamSearchState<T> {
   IAllocatorUniquePtr<void> scores_buffer_;
   IAllocatorUniquePtr<void> topk_temp_buffer_;
   IAllocatorUniquePtr<void> sequences_device_buffer_;
-  // IAllocatorUniquePtr<T> next_token_logits_buffer_;
-  // IAllocatorUniquePtr<float> next_token_scores_buffer_;
-  // IAllocatorUniquePtr<int32_t> next_tokens_buffer_;
-  // IAllocatorUniquePtr<int32_t> next_indices_buffer_;
-  // IAllocatorUniquePtr<float> next_scores_buffer_;
-  // IAllocatorUniquePtr<int32_t> next_positions_buffer_;
-  // IAllocatorUniquePtr<float> beam_scores_buffer_;
-  // IAllocatorUniquePtr<float> scores_buffer_;
-  // IAllocatorUniquePtr<float> topk_temp_buffer_;
-  // IAllocatorUniquePtr<int32_t> sequences_device_buffer_;
 };
 
 struct BeamSearchCpuState : IBeamSearchCpuState {
