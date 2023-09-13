@@ -38,7 +38,7 @@ if (onnxruntime_BUILD_UNIT_TESTS)
   endif()
   set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
   # Set it to ON will cause crashes in onnxruntime_test_all when onnxruntime_USE_CUDA is ON
-  set(GTEST_HAS_ABSL OFF CACHE BOOL "" FORCE)
+  set(GTEST_HAS_ABSL ON CACHE BOOL "" FORCE)
   # gtest and gmock
   FetchContent_Declare(
     googletest
