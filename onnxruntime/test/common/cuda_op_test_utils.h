@@ -19,7 +19,9 @@ inline bool HasCudaEnvironment(int min_cuda_architecture) {
   if (min_cuda_architecture == 0) {
     return true;
   }
-
+#if 1
+  return true;
+#else
   int cuda_architecture = 0;
 
 #ifdef USE_CUDA
@@ -35,6 +37,7 @@ inline bool HasCudaEnvironment(int min_cuda_architecture) {
 #endif
 
   return cuda_architecture >= min_cuda_architecture;
+#endif
 }
 
 inline bool NeedSkipIfCudaArchLowerThan(int min_cuda_architecture) {

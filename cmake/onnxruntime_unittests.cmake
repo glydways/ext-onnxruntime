@@ -65,7 +65,7 @@ function(AddTest)
 
   onnxruntime_add_include_to_target(${_UT_TARGET} date::date flatbuffers::flatbuffers)
   target_include_directories(${_UT_TARGET} PRIVATE ${TEST_INC_DIR})
-  if (onnxruntime_USE_CUDA)
+  if (onnxruntime_USE_CUDA AND onnxruntime_ENABLE_TRAINING)
     target_include_directories(${_UT_TARGET} PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${onnxruntime_CUDNN_HOME}/include)
     if (onnxruntime_USE_NCCL)
       target_include_directories(${_UT_TARGET} PRIVATE ${NCCL_INCLUDE_DIRS})
@@ -759,7 +759,7 @@ if(NOT TARGET onnxruntime AND NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
   list(APPEND all_tests ${onnxruntime_shared_lib_test_SRC})
 endif()
 
-if (onnxruntime_USE_CUDA)
+if (onnxruntime_ENABLE_CUDA_EP_INTERNAL_TESTS)
   onnxruntime_add_static_library(onnxruntime_test_cuda_ops_lib ${ONNXRUNTIME_SHARED_LIB_TEST_SRC_DIR}/cuda_ops.cu)
   list(APPEND onnxruntime_test_common_libs onnxruntime_test_cuda_ops_lib)
   file(GLOB onnxruntime_test_providers_cuda_ut_src CONFIGURE_DEPENDS
