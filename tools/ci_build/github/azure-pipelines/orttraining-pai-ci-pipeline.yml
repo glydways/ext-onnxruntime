@@ -41,8 +41,8 @@ jobs:
     clean: true
     submodules: recursive
 
-  - template: set-python-manylinux-variables-step.yml
-  - template: get-docker-image-steps.yml
+  - template: templates/set-python-manylinux-variables-step.yml
+  - template: templates/get-docker-image-steps.yml
     parameters:
       Dockerfile: tools/ci_build/github/linux/docker/Dockerfile.manylinux2_28_rocm
       Context: tools/ci_build/github/linux/docker
