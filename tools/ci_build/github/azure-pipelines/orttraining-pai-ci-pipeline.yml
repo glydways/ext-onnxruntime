@@ -11,6 +11,14 @@ pr:
     - 'onnxruntime/core/providers/js'
 name: 'orttraining_ci_$(Date:yyyyMMdd)_$(Rev:r)'
 
+resources:
+  repositories:
+  - repository: manylinux
+    type: Github
+    endpoint: Microsoft
+    name: pypa/manylinux
+    ref: 5eda9aded5462201e6310105728d33016e637ea7
+
 variables:
   - name: video
     value: 44
@@ -48,8 +56,11 @@ jobs:
       Context: tools/ci_build/github/linux/docker
       DockerBuildArgs: >-
         --build-arg INSTALL_DEPS_EXTRA_ARGS=-tmur
-        --network=host
+        --network=host --build-arg POLICY=manylinux_2_28 --build-arg PLATFORM=x86_64
         --build-arg ROCM_VERSION=$(RocmVersion)
+        --build-arg DEVTOOLSET_ROOTPATH=/opt/rh/gcc-toolset-12/root
+        --build-arg PREPEND_PATH=/opt/rh/gcc-toolset-12/root/usr/bin:
+        --build-arg LD_LIBRARY_PATH_ARG=/opt/rh/gcc-toolset-12/root/usr/lib64:/opt/rh/gcc-toolset-12/root/usr/lib:/opt/rh/gcc-toolset-12/root/usr/lib64/dyninst:/opt/rh/gcc-toolset-12/root/usr/lib/dyninst:/usr/local/lib64:/usr/local/lib
       Repository: onnxruntimetrainingrocm-cibuild-rocm$(RocmVersion)-build
 
   #- script: |-
