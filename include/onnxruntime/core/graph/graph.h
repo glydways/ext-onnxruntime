@@ -83,10 +83,10 @@ class Node {
        gsl::span<NodeArg* const> output_args,
        const NodeAttributes* attributes,
        std::string_view domain) {
-    Init(std::string{name}, std::string{op_type}, std::string{description},
-         std::vector<NodeArg*>{input_args.begin(), input_args.end()},
-         std::vector<NodeArg*>{output_args.begin(), output_args.end()},
-         attributes, std::string{domain});
+    Init(name, op_type, description,
+         input_args,
+         output_args,
+         attributes, domain);
   }
 #endif
 
@@ -216,6 +216,12 @@ class Node {
     return ConstPointerContainer<std::vector<NodeArg*>>(definitions_.input_defs);
   }
 
+  /** Gets the Node's input definitions as span.
+   */
+  gsl::span<NodeArg* const> InputDefsAsSpan() const noexcept {
+    return definitions_.input_defs;
+  }
+
   /** Gets the implicit inputs to this Node.
   If this Node contains a subgraph, these are the NodeArg's that are implicitly consumed by Nodes within that
   subgraph. e.g. If and Loop operators.*/
@@ -223,10 +229,22 @@ class Node {
     return ConstPointerContainer<std::vector<NodeArg*>>(definitions_.implicit_input_defs);
   }
 
+  /** Gets the Node's implicit input definitions as span.
+   */
+  gsl::span<NodeArg* const> ImplicitInputDefsAsSpan() const noexcept {
+    return definitions_.implicit_input_defs;
+  }
+
   /** Gets the Node's output definitions.
   @remarks requires ConstPointerContainer wrapper to apply const to the NodeArg pointers so access is read-only. */
   ConstPointerContainer<std::vector<NodeArg*>> OutputDefs() const noexcept {
     return ConstPointerContainer<std::vector<NodeArg*>>(definitions_.output_defs);
+  }
+
+  /** Gets the Node's output definitions as span.
+   */
+  gsl::span<NodeArg* const> OutputDefsAsSpan() const noexcept {
+    return definitions_.output_defs;
   }
 
 #if !defined(ORT_MINIMAL_BUILD)
@@ -563,13 +581,13 @@ class Node {
   ORT_DISALLOW_COPY_ASSIGNMENT_AND_MOVE(Node);
 
 #if !defined(ORT_MINIMAL_BUILD) || defined(ORT_EXTENDED_MINIMAL_BUILD) || defined(ORT_MINIMAL_BUILD_CUSTOM_OPS)
-  void Init(const std::string& name,
-            const std::string& op_type,
-            const std::string& description,
-            const std::vector<NodeArg*>& input_args,
-            const std::vector<NodeArg*>& output_args,
+  void Init(std::string_view name,
+            std::string_view op_type,
+            std::string_view description,
+            gsl::span<NodeArg* const> input_args,
+            gsl::span<NodeArg* const> output_args,
             const NodeAttributes* attributes,
-            const std::string& domain);
+            std::string_view domain);
 #endif
 
 #if !defined(ORT_MINIMAL_BUILD) || defined(ORT_EXTENDED_MINIMAL_BUILD)
@@ -1140,6 +1158,14 @@ class Graph {
   @returns Status indicating success or providing an error message.
   */
   Status InlineFunction(Node& node);
+
+  /**
+   Inline a graph into this graph.
+   The Graph needs to be Resolve()d after this call.
+   @param graph to be inlined
+   @param unique_identifier pre-generated unique identifier
+  */
+  Status InlineSubgraph(const Graph& node, std::string_view unique_idenitfier);
 
   /** Mark a NodeArg name as coming from the outer scope when programmatically constructing a Graph that will
   be used as a GraphProto attribute in another Node..

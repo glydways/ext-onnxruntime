@@ -860,18 +860,18 @@ Status Node::LoadEdgesFromOrtFormat(const onnxruntime::fbs::NodeEdge& fbs_node_e
 }
 
 #if !defined(ORT_MINIMAL_BUILD) || defined(ORT_EXTENDED_MINIMAL_BUILD) || defined(ORT_MINIMAL_BUILD_CUSTOM_OPS)
-void Node::Init(const std::string& name,
-                const std::string& op_type,
-                const std::string& description,
-                const std::vector<NodeArg*>& input_args,
-                const std::vector<NodeArg*>& output_args,
+void Node::Init(std::string_view name,
+                std::string_view op_type,
+                std::string_view description,
+                gsl::span<NodeArg* const> input_args,
+                gsl::span<NodeArg* const> output_args,
                 const NodeAttributes* attributes,
-                const std::string& domain) {
+                std::string_view domain) {
   name_ = name;
   op_type_ = op_type;
   description_ = description;
-  definitions_.input_defs = input_args;
-  definitions_.output_defs = output_args;
+  definitions_.input_defs.assign(input_args.begin(), input_args.end());
+  definitions_.output_defs.assign(output_args.begin(), output_args.end());
   domain_ = domain;
   can_be_saved_ = true;
   priority_ = 0;
@@ -3261,8 +3261,8 @@ Node& Graph::AddNode(const std::string& name,
                      gsl::span<NodeArg* const> output_args,
                      const NodeAttributes* attributes,
                      const std::string& domain) {
-  std::vector<NodeArg*> inputs;
-  std::vector<NodeArg*> outputs;
+  InlinedVector<NodeArg*> inputs;
+  InlinedVector<NodeArg*> outputs;
   inputs.resize(input_args.size());
   outputs.resize(output_args.size());
   int i = 0;
@@ -4019,6 +4019,61 @@ Node& Graph::FuseSubGraph(const IndexedSubGraph& sub_graph,
   return fused_node;
 }
 
+Status Graph::InlineSubgraph(const Graph& graph, std::string_view unique_identifier) {
+  for (const auto& subgraph_node : graph.Nodes()) {
+    if (subgraph_node.OpType() != kConstant) {
+      std::string uniq_name(subgraph_node.Name());
+      uniq_name.append(unique_identifier);
+      AddNode(uniq_name, subgraph_node.OpType(), subgraph_node.Description(),
+              subgraph_node.InputDefsAsSpan(),
+              subgraph_node.OutputDefsAsSpan(),
+              &subgraph_node.GetAttributes(),
+              subgraph_node.Domain());
+    }
+  }
+
+  // Process constant nodes and initializers after all other nodes
+  // so NodeArgs are created from the nodes
+  const auto& model_path = ModelPath();
+  for (const auto& subgraph_node : graph.Nodes()) {
+    if (subgraph_node.OpType() == kConstant) {
+      // Copy constant nodes _value to name_to_initial_tensor_
+      ONNX_NAMESPACE::NodeProto subgraph_node_proto{};
+      subgraph_node.ToProto(subgraph_node_proto);
+
+      const gsl::not_null<TensorProto*> tensor{graph_proto_->add_initializer()};
+      ORT_RETURN_IF_ERROR(utils::ConstantNodeProtoToTensorProto(subgraph_node_proto, model_path, *tensor, subgraph_node_proto.output(0)));
+
+      auto insert_result = name_to_initial_tensor_.emplace(tensor->name(), tensor);
+      ORT_ENFORCE(insert_result.second, "Constant node name: ", tensor->name(), " in inlined subgraph: ",
+                  graph.Name(), " conflicts with graph initializer. Check Specializing code.");
+      if (GetNodeArg(tensor->name()) == nullptr) {
+        TypeProto t{TypeProtoFromTensorProto(*tensor)};
+        ORT_IGNORE_RETURN_VALUE(GetOrCreateNodeArg(tensor->name(), &t));
+      }
+    }
+  }
+
+  for (auto& init : graph.name_to_initial_tensor_) {
+    const gsl::not_null<TensorProto*> tensor{graph_proto_->add_initializer()};
+    *tensor = *init.second;
+
+    std::string uniq_name(tensor->name());
+    uniq_name.append(unique_identifier);
+    tensor->set_name(std::move(uniq_name));
+
+    auto insert_result = name_to_initial_tensor_.emplace(tensor->name(), tensor);
+    ORT_ENFORCE(insert_result.second, "Initializer name: ", tensor->name(), " in inlined subgraph: ",
+                graph.Name(), " conflicts with graph initializer. Check Specializing code.");
+    if (GetNodeArg(tensor->name()) == nullptr) {
+      TypeProto t{TypeProtoFromTensorProto(*tensor)};
+      ORT_IGNORE_RETURN_VALUE(GetOrCreateNodeArg(tensor->name(), &t));
+    }
+  }
+
+  return Status::OK();
+}
+
 Status Graph::InlineFunction(Node& callnode) {
   const auto& model_path = ModelPath();
   auto output_edges = callnode.GetRelationships().output_edges;
@@ -4074,7 +4129,7 @@ Status Graph::InlineFunction(Node& callnode) {
         onnxruntime::NodeAttributes new_attr_map;
         new_attr_map.reserve(inlined_node.attribute_size());
         for (const auto& node_attr : inlined_node.attribute()) {
-          onnx::AttributeProto attr_copy = node_attr;
+          ONNX_NAMESPACE::AttributeProto attr_copy = node_attr;
           new_attr_map[node_attr.name()] = std::move(attr_copy);
         }
         AddNode(inlined_node.name(), inlined_node.op_type(),
@@ -4083,62 +4138,9 @@ Status Graph::InlineFunction(Node& callnode) {
     }
 
   } else {
-    // Uncommon scenario. Inlining a node representing a fused sub-graph.
-    // TODO: Unclear that this feature is needed. Can this be removed?
+    // Inlining a node representing a fused sub-graph.
     const Graph& subgraph = callnode.GetFunctionBody()->Body();
-
-    for (const auto& subgraph_node : subgraph.Nodes()) {
-      if (subgraph_node.OpType() != kConstant) {
-        InlinedVector<onnxruntime::NodeArg*> inputs;
-        InlinedVector<onnxruntime::NodeArg*> outputs;
-        for (auto* input : subgraph_node.InputDefs()) {
-          auto& n_input = GetOrCreateNodeArg(input->Name(), input->TypeAsProto());
-          inputs.push_back(&n_input);
-        }
-        for (auto* output : subgraph_node.OutputDefs()) {
-          auto& n_output = GetOrCreateNodeArg(output->Name(), output->TypeAsProto());
-          outputs.push_back(&n_output);
-        }
-
-        AddNode(subgraph_node.Name() + uniq_identifier, subgraph_node.OpType(), subgraph_node.Description(),
-                inputs,
-                outputs,
-                &subgraph_node.GetAttributes(),
-                subgraph_node.Domain());
-      }
-    }
-
-    // Process constant nodes and iniitalizers after all other nodes
-    // so NodeArgs are created from the nodes
-    for (const auto& subgraph_node : subgraph.Nodes()) {
-      if (subgraph_node.OpType() == kConstant) {
-        // Copy constant nodes _value to name_to_initial_tensor_
-        ONNX_NAMESPACE::NodeProto subgraph_node_proto{};
-        subgraph_node.ToProto(subgraph_node_proto);
-        const gsl::not_null<TensorProto*> tensor{graph_proto_->add_initializer()};
-        ORT_RETURN_IF_ERROR(utils::ConstantNodeProtoToTensorProto(subgraph_node_proto, model_path, *tensor, subgraph_node_proto.output(0)));
-        auto insert_result = name_to_initial_tensor_.emplace(tensor->name(), tensor);
-        ORT_ENFORCE(insert_result.second, "Constant node name: ", tensor->name(), " in inlined subgraph: ",
-                    subgraph.Name(), " conflicts with graph initializer. Check Specializing code.");
-        if (GetNodeArg(tensor->name()) == nullptr) {
-          TypeProto t{TypeProtoFromTensorProto(*tensor)};
-          ORT_IGNORE_RETURN_VALUE(GetOrCreateNodeArg(tensor->name(), &t));
-        }
-      }
-    }
-
-    for (auto& init : subgraph.name_to_initial_tensor_) {
-      const gsl::not_null<TensorProto*> tensor{graph_proto_->add_initializer()};
-      *tensor = *init.second;
-      tensor->set_name(tensor->name() + uniq_identifier);
-      auto insert_result = name_to_initial_tensor_.emplace(tensor->name(), tensor);
-      ORT_ENFORCE(insert_result.second, "Initializer name: ", tensor->name(), " in inlined subgraph: ",
-                  subgraph.Name(), " conflicts with graph initializer. Check Specializing code.");
-      if (GetNodeArg(tensor->name()) == nullptr) {
-        TypeProto t{TypeProtoFromTensorProto(*tensor)};
-        ORT_IGNORE_RETURN_VALUE(GetOrCreateNodeArg(tensor->name(), &t));
-      }
-    }
+    ORT_RETURN_IF_ERROR(InlineSubgraph(subgraph, uniq_identifier));
   }
 
   RemoveNode(callnode.Index());
