@@ -192,6 +192,8 @@ RUN mkdir -p /tmp/ccache && \
     cp /tmp/ccache/ccache /usr/bin && \
     rm -rf /tmp/ccache
 
+RUN yum install python38-devel -y
+
 ARG BUILD_UID=1001
 ARG BUILD_USER=onnxruntimedev
 RUN adduser --uid $BUILD_UID $BUILD_USER
