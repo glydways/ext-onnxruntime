@@ -195,29 +195,29 @@ set(utf8_range_ENABLE_INSTALL OFF CACHE BOOL "Configure installation" FORCE)
 
 
 #Protobuf depends on absl and utf8_range
-FetchContent_Declare(
-  Protobuf
-  URL ${DEP_URL_protobuf}
-  URL_HASH SHA1=${DEP_SHA1_protobuf}
-  PATCH_COMMAND ${ONNXRUNTIME_PROTOBUF_PATCH_COMMAND}
-  FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf
-)
+#FetchContent_Declare(
+#  Protobuf
+#  URL ${DEP_URL_protobuf}
+#  URL_HASH SHA1=${DEP_SHA1_protobuf}
+#  PATCH_COMMAND ${ONNXRUNTIME_PROTOBUF_PATCH_COMMAND}
+#  FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf
+#)
 
-set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
+#set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
 #TODO: we'd better to turn the following option off. However, it will cause
 # ".\build.bat --config Debug --parallel --skip_submodule_sync --update" fail with an error message:
 # install(EXPORT "ONNXTargets" ...) includes target "onnx_proto" which requires target "libprotobuf-lite" that is
 # not in any export set.
 #set(protobuf_INSTALL OFF CACHE BOOL "Install protobuf binaries and files" FORCE)
-set(protobuf_USE_EXTERNAL_GTEST ON CACHE BOOL "" FORCE)
+#set(protobuf_USE_EXTERNAL_GTEST ON CACHE BOOL "" FORCE)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-  set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "Build protobuf tests" FORCE)
-  set(protobuf_WITH_ZLIB OFF CACHE BOOL "Build with zlib support" FORCE)
-endif()
-if (onnxruntime_DISABLE_RTTI)
-  set(protobuf_DISABLE_RTTI ON CACHE BOOL "Remove runtime type information in the binaries" FORCE)
-endif()
+#if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+#  set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "Build protobuf tests" FORCE)
+#  set(protobuf_WITH_ZLIB OFF CACHE BOOL "Build with zlib support" FORCE)
+#endif()
+#if (onnxruntime_DISABLE_RTTI)
+#  set(protobuf_DISABLE_RTTI ON CACHE BOOL "Remove runtime type information in the binaries" FORCE)
+#endif()
 
 include(protobuf_function)
 #protobuf end
@@ -376,11 +376,12 @@ FetchContent_Declare(
 # use fetch content rather than makeavailable because safeint only includes unconditional test targets
 FetchContent_Populate(safeint)
 # The next line will generate an error message "fatal: not a git repository", but it is ok. It is from flatbuffers
-onnxruntime_fetchcontent_makeavailable(utf8_range)
+#onnxruntime_fetchcontent_makeavailable(utf8_range)
 # protobuf's cmake/utf8_range.cmake has the following line
-include_directories(${utf8_range_SOURCE_DIR})
+#include_directories(${utf8_range_SOURCE_DIR})
 
-onnxruntime_fetchcontent_makeavailable(Protobuf nlohmann_json mp11 re2 GSL flatbuffers ${ONNXRUNTIME_CPUINFO_PROJ} ${ONNXRUNTIME_CLOG_PROJ})
+#onnxruntime_fetchcontent_makeavailable(Protobuf nlohmann_json mp11 re2 GSL flatbuffers ${ONNXRUNTIME_CPUINFO_PROJ} ${ONNXRUNTIME_CLOG_PROJ})
+onnxruntime_fetchcontent_makeavailable(nlohmann_json mp11 re2 GSL flatbuffers ${ONNXRUNTIME_CPUINFO_PROJ} ${ONNXRUNTIME_CLOG_PROJ})
 if(NOT flatbuffers_FOUND)
   if(NOT TARGET flatbuffers::flatbuffers)
     add_library(flatbuffers::flatbuffers ALIAS flatbuffers)
@@ -411,6 +412,7 @@ if (onnxruntime_BUILD_UNIT_TESTS)
   onnxruntime_fetchcontent_makeavailable(googletest)
 endif()
 
+find_package(Protobuf REQUIRED)
 if(Protobuf_FOUND)
   message("Protobuf version: ${Protobuf_VERSION}")
 else()
