@@ -109,6 +109,7 @@ jobs:
               --cmake_extra_defines \
                 CMAKE_HIP_COMPILER=${ROCM_HOME}/llvm/bin/clang++ \
                 onnxruntime_BUILD_KERNEL_EXPLORER=ON \
+                FETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER \
               --use_cache \
               --use_rocm \
               --rocm_version=$(RocmVersion) \
