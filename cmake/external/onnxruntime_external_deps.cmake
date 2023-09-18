@@ -161,21 +161,21 @@ if(Patch_FOUND)
 else()
  set(ONNXRUNTIME_PROTOBUF_PATCH_COMMAND "")
 endif()
-FetchContent_Declare(
-  Protobuf
-  URL ${DEP_URL_protobuf}
-  URL_HASH SHA1=${DEP_SHA1_protobuf}
-  PATCH_COMMAND ${ONNXRUNTIME_PROTOBUF_PATCH_COMMAND}
-  FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf
-)
-set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
-if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-  set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "Build protobuf tests" FORCE)
-  set(protobuf_WITH_ZLIB OFF CACHE BOOL "Build with zlib support" FORCE)
-endif()
-if (onnxruntime_DISABLE_RTTI)
-  set(protobuf_DISABLE_RTTI ON CACHE BOOL "Remove runtime type information in the binaries" FORCE)
-endif()
+#FetchContent_Declare(
+#  Protobuf
+#  URL ${DEP_URL_protobuf}
+#  URL_HASH SHA1=${DEP_SHA1_protobuf}
+#  PATCH_COMMAND ${ONNXRUNTIME_PROTOBUF_PATCH_COMMAND}
+#  FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf
+#)
+#set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
+#if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+#  set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "Build protobuf tests" FORCE)
+#  set(protobuf_WITH_ZLIB OFF CACHE BOOL "Build with zlib support" FORCE)
+#endif()
+#if (onnxruntime_DISABLE_RTTI)
+#  set(protobuf_DISABLE_RTTI ON CACHE BOOL "Remove runtime type information in the binaries" FORCE)
+#endif()
 
 include(protobuf_function)
 #protobuf end
@@ -317,7 +317,8 @@ FetchContent_Declare(
 )
 
 # The next line will generate an error message "fatal: not a git repository", but it is ok. It is from flatbuffers
-onnxruntime_fetchcontent_makeavailable(Protobuf nlohmann_json mp11 re2 safeint GSL flatbuffers)
+#onnxruntime_fetchcontent_makeavailable(Protobuf nlohmann_json mp11 re2 safeint GSL flatbuffers)
+onnxruntime_fetchcontent_makeavailable(nlohmann_json mp11 re2 safeint GSL flatbuffers)
 if(NOT flatbuffers_FOUND)
   if(NOT TARGET flatbuffers::flatbuffers)
     add_library(flatbuffers::flatbuffers ALIAS flatbuffers)
@@ -348,6 +349,7 @@ if (onnxruntime_BUILD_UNIT_TESTS)
   onnxruntime_fetchcontent_makeavailable(googletest)
 endif()
 
+find_package(Protobuf REQUIRED)
 if(Protobuf_FOUND)
   message("Protobuf version: ${Protobuf_VERSION}")
 else()
