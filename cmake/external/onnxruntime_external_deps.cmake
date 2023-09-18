@@ -114,12 +114,17 @@ else()
 endif()
 
 #flatbuffers 1.11.0 does not have flatbuffers::IsOutRange, therefore we require 1.12.0+
+if(Patch_FOUND)
+  set(ONNXRUNTIME_FLATBUFFERS_PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/flatbuffers/flatbuffers.patch)
+else()
+  set(ONNXRUNTIME_FLATBUFFERS_PATCH_COMMAND "")
+endif()
 FetchContent_Declare(
     flatbuffers
     URL ${DEP_URL_flatbuffers}
     URL_HASH SHA1=${DEP_SHA1_flatbuffers}
     PATCH_COMMAND ${ONNXRUNTIME_FLATBUFFERS_PATCH_COMMAND}
-    FIND_PACKAGE_ARGS 23.5.9 NAMES Flatbuffers
+    FIND_PACKAGE_ARGS 1.12.0...<2.0.0 NAMES Flatbuffers
 )
 
 # Download a protoc binary from Internet if needed
