@@ -501,6 +501,9 @@ if (onnxruntime_USE_CUDA)
                   "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=inconsistent-missing-override>")
       target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=unused-but-set-parameter>"
                   "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=unused-but-set-parameter>")
+
+      target_link_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wl,-rpath,/usr/local/cuda/lib64>")
+      target_link_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wl,-rpath,/usr/local/cudnn/lib>")
     else()
       #mutex.cuh(91): warning C4834: discarding return value of function with 'nodiscard' attribute
       target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4834>")
