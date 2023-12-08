@@ -501,6 +501,12 @@ if (onnxruntime_USE_CUDA)
                   "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=inconsistent-missing-override>")
       target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=unused-but-set-parameter>"
                   "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=unused-but-set-parameter>")
+      target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=braced-scalar-init>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=braced-scalar-init>")
+      target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=shorten-64-to-32>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=shorten-64-to-32>")
+      target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=instantiation-after-specialization>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=instantiation-after-specialization>")
 
       target_link_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wl,-rpath,/usr/local/cuda/lib64>")
       target_link_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wl,-rpath,/usr/local/cudnn/lib>")
