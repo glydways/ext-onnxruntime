@@ -234,6 +234,9 @@ cmake_dependent_option(MSVC_Z7_OVERRIDE "replacing /Zi and /ZI with /Z7 when usi
 option(onnxruntime_USE_AZURE "Build with azure inferencing support" OFF)
 option(onnxruntime_USE_LOCK_FREE_QUEUE "Build with lock-free task queue for threadpool." OFF)
 
+set(onnxruntime_CUDA_HOME "/usr/local/cuda")
+set(onnxruntime_CUDNN_HOME "/usr/local/cudnn")
+
 # ENABLE_TRAINING includes all training functionality
 # The following 2 entry points
 # 1. ORTModule
