@@ -1,9 +1,8 @@
-<<<<<<< HEAD
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3987eac9..5e5462f1 100644
+index a895a34..45b638d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -279,5 +279,5 @@
+@@ -280,7 +280,7 @@ set(FlatBuffers_GRPCTest_SRCS
  # Append FLATBUFFERS_CXX_FLAGS to CMAKE_CXX_FLAGS.
  if(DEFINED FLATBUFFERS_CXX_FLAGS)
    message(STATUS "extend CXX_FLAGS with ${FLATBUFFERS_CXX_FLAGS}")
@@ -11,25 +10,3 @@ index 3987eac9..5e5462f1 100644
 +  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLATBUFFERS_CXX_FLAGS} -Wno-error=stringop-overflow")
  endif()
  message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-=======
-diff --git a/src/idl_gen_rust.cpp b/src/idl_gen_rust.cpp
-index 55b8439b..48539d52 100644
---- a/src/idl_gen_rust.cpp
-+++ b/src/idl_gen_rust.cpp
-@@ -406,7 +406,6 @@ class RustGenerator : public BaseGenerator {
-     // example: f(A, D::E)          -> super::D::E
-     // does not include leaf object (typically a struct type).
- 
--    size_t i = 0;
-     std::stringstream stream;
- 
-     auto s = src->components.begin();
-@@ -417,7 +416,6 @@ class RustGenerator : public BaseGenerator {
-       if (*s != *d) { break; }
-       ++s;
-       ++d;
--      ++i;
-     }
- 
-     for (; s != src->components.end(); ++s) { stream << "super::"; }
->>>>>>> 9040affa5a (Add patch for flatbuffers compilation error, not used variable.)
