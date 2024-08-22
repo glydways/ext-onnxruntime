@@ -162,6 +162,14 @@
                   "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-reorder>")
       target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=sign-compare>"
                   "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=sign-compare>")
+      target_compile_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=unused-function>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=unused-function>")
+      target_compile_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=unused-private-field>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=unused-private-field>")
+      target_compile_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=inconsistent-missing-override>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=inconsistent-missing-override>")
+      target_compile_options(onnxruntime_providers_cuda PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-error=unused-but-set-parameter>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:-Wno-error=unused-but-set-parameter>")
     else()
       #mutex.cuh(91): warning C4834: discarding return value of function with 'nodiscard' attribute
       target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4834>")
