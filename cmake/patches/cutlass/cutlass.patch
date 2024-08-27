@@ -1,0 +1,21 @@
+diff --git a/include/cutlass/predicate_vector.h b/include/cutlass/predicate_vector.h
+index d158225..664d821 100644
+--- a/include/cutlass/predicate_vector.h
++++ b/include/cutlass/predicate_vector.h
+@@ -490,11 +490,11 @@ struct PredicateVector {
+
+   /// Returns true if entire predicate array is zero.
+   CUTLASS_HOST_DEVICE bool is_zero() const {
+-    Storage mask(0);
+-    for (int byte = 0; byte < sizeof(Storage); ++byte) {
+-      Storage byte_mask = (((1 << kPredicatesPerByte) - 1) << kPredicateStart);
+-      mask |= (byte_mask << (byte * 8));
+-    }
++    //Storage mask(0);
++    //for (int byte = 0; byte < sizeof(Storage); ++byte) {
++      //Storage byte_mask = (((1 << kPredicatesPerByte) - 1) << kPredicateStart);
++      //mask |= (byte_mask << (byte * 8));
++    //}
+     uint32_t result = 0;
+     for (int word = 0; word < kWordCount; ++word) {
+       result |= storage(word);
